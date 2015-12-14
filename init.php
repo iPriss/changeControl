@@ -132,11 +132,20 @@ class InitCoca extends Coca {
 	// init.php?service=getChangesForMe&params[userId]=omar.yerden
 	public function getChangesForMe($params) {
 		if(!isset($params['userId'])){ die(returnError(105, 'Missing or invalid user id')); }
-		$data = $this->getChangesByUser($params['userId']);
+		$limit = isset($params['limit']) ? $params['limit'] : 0;
+		$orderBy = isset($params['orderBy']) ? $params['orderBy'] : false;
+		$data = $this->getChangesByUser($params['userId'], $limit, $orderBy);
 
 		if(!$data){ die(returnError(118, 'An error ocurred, please try again later')); }
 
 		echo json_encode( array('status'=>'ok', 'data'=>$data) );
+	}
+
+	// init.php?service=getStats
+	public function getStats($params) {
+		$data = $this->countChangeByStatus();
+		if(!$data){ die(returnError(118, 'An error ocurred, please try again later')); }
+		echo json_encode( array('status'=>'ok', 'data'=>$data));
 	}
 }
 

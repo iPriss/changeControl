@@ -116,9 +116,9 @@
 				<div class="row">
 					<!-- QuickData - Pending -->
 					<div class="col-sm-6 col-md-3">
-          				<div class="row-stat">
-            				<p class="row-stat-label pending-to-approvals">Pending to aprovals</p>
-            				<h3 class="row-stat-value"><?php echo rand(20,559); ?></h3>
+          				<div class="row-stat pending-to-approvals">
+            				<p class="row-stat-label">Pending to aprovals</p>
+            				<h3 class="row-stat-value">0</h3>
             				<span class="label label-success row-stat-badge">+9%</span>
           				</div> <!-- /.row-stat -->
         			</div> <!-- /.col -->
@@ -127,7 +127,7 @@
 					<div class="col-sm-6 col-md-3">
           				<div class="row-stat approved">
             				<p class="row-stat-label">Approved</p>
-            				<h3 class="row-stat-value"><?php echo rand(20,999); ?></h3>
+            				<h3 class="row-stat-value">0</h3>
             				<span class="label label-success row-stat-badge">+43%</span>
           				</div> <!-- /.row-stat -->
         			</div> <!-- /.col -->
@@ -136,7 +136,7 @@
 					<div class="col-sm-6 col-md-3">
           				<div class="row-stat changes-in-process">
             				<p class="row-stat-label">Changes in process</p>
-            				<h3 class="row-stat-value"><?php echo rand(20,999); ?></h3>
+            				<h3 class="row-stat-value">0</h3>
             				<span class="label label-success row-stat-badge">+43%</span>
           				</div> <!-- /.row-stat -->
         			</div> <!-- /.col -->
@@ -145,7 +145,7 @@
 					<div class="col-sm-6 col-md-3">
           				<div class="row-stat closed-request">
             				<p class="row-stat-label">Closed requests</p>
-            				<h3 class="row-stat-value"><?php echo rand(20,999); ?></h3>
+            				<h3 class="row-stat-value">0</h3>
             				<span class="label label-success row-stat-badge">+43%</span>
           				</div> <!-- /.row-stat -->
         			</div> <!-- /.col -->
@@ -210,11 +210,28 @@
 
 								</form>
 							</div>
-							<!-- End portlet content -->
+							<!-- End portlet content  -->
 						</div>
-						<!-- End portlet -->
+						<!-- End portlet [Change Request] -->
 					</div>
 					<!-- End col -->
+
+					<div class="col-sm-6">
+						<h4 class="heading"> Lasted Change Request </h4>
+						<!-- data-provide="datatable" -->
+						<table id="quick-changes-list" class="table table-bordered">
+            				<thead>
+              					<tr>
+                					<th>#</th>
+                					<th>Description</th>
+									<!-- <th>Create By</th> -->
+                					<th>Request By</th>
+                					<th>Status</th>
+                					<th></th>
+					            </tr>
+            				</thead>
+            			</table>
+					</div>
 
 				</div>
 				<!-- End Row new request -->
@@ -248,6 +265,8 @@
 <script src="js/demos/form-validation.js"></script>
 <script src="js/plugins/magnific/jquery.magnific-popup.min.js"></script>
 <script src="js/plugins/howl/howl.js"></script>
+<script src="js/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="./js/plugins/datatables/DT_bootstrap.js"></script>
 
 <script>
 	$(document).ready(function(){
@@ -295,5 +314,30 @@
                 });
             }
         });
+
+		// Filling quick changes list
+        var oTable = $('#quick-changes-list').DataTable({
+			ajax: 'init.php?service=getChangesForMe&params[userId]=omar.yerden&params[orderBy]=last&params[limit]=10',
+			dom: '',
+			ordering: false,
+			columns: [
+	            {data: 'change_id'},
+	            {data: 'change_title', render: function(data, type, full, meta){ return truncateText(data, 32, 'aWithTitle'); }},
+	            // {data: 'created_by'},
+	            {data: 'request_by'},
+	            {data: 'change_status'},
+	            {defaultContent: '<button type="button" onclick="loadChangeRequest(this)" class=""><i class="fa fa-info"></i></button>', 'sWidth': '30px'}
+        	]
+		});
+
+		setInterval( function () {
+		    oTable.ajax.reload();
+		}, 3000 );
+
+        // Getting stats from db
+        getStats();
+        timerStats = setInterval(function(){ getStats(); }, 1000);
+
+
 	});
 </script>

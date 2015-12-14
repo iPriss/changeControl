@@ -49,8 +49,8 @@ class DBaccess {
 		return pg_fetch_array($this -> result, NULL, PGSQL_ASSOC);
 	}
 
-	public function getChangeByUserFromDB($userId) {
-		$this -> query = "SELECT * FROM changes WHERE change_id IN (SELECT change_id FROM changes_users WHERE user_id = '{$userId}')";
+	public function getChangeByUserFromDB($userId, $limit, $orderBy) {
+		$this -> query = "SELECT * FROM changes WHERE change_id IN (SELECT change_id FROM changes_users WHERE user_id = '{$userId}') {$orderBy} LIMIT {$limit}";
 		$this -> result = pg_query($this->dbCoca, $this -> query);
 		return pg_fetch_all($this -> result);
 	}
@@ -145,6 +145,13 @@ class DBaccess {
 						  VALUES ('{$userId}','{$userName}', '{$userEmail}', '{$userStatus}', '{$dateCreated}','{$userSecret}','{$isApprover}')";
 		$this -> result = pg_query($this -> dbCoca, $this -> query);
 		return pg_affected_rows($this -> result);
+	}
+
+	public function countChangeByStatusFromDB($status) {
+		$this -> query = "SELECT count(*) AS total FROM changes WHERE change_status = '{$status}'";
+		$this -> result = pg_query($this -> dbCoca, $this -> query);
+
+		return pg_fetch_result($this -> result, 0, 0);
 	}
 
 	function __destruct(){

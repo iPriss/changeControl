@@ -73,9 +73,16 @@ class Coca extends DBAccess {
 		return $this->getChangeFromDB($this->change_id);
 	}
 
-	public function getChangesByUser($userId) {
+	public function getChangesByUser($userId, $limit, $orderBy) {
 		$this -> user_id = isset($userId) ? $userId : $this -> user_id;
-		return $this->getChangeByUserFromDB($this->user_id);
+		$limit = isset($limit) ? $limit : 0;
+		$orderBy = isset($orderBy) ? $orderBy : false;
+
+		if($orderBy && $orderBy == 'last'){
+			$orderBy = 'ORDER BY date_created DESC';
+		}
+
+		return $this->getChangeByUserFromDB($this->user_id, $limit, $orderBy);
 	}
 
 	public function assingUserToRequest($changeId, $userId, $isApprover) {
@@ -171,6 +178,15 @@ class Coca extends DBAccess {
 		if($token_data['token_used'] == $tokenType){ return returnError(54, 'Token already used'); }
 
 		return true;
+	}
+
+	public function countChangeByStatus() {
+		$pending  = $this->countChangeByStatusFromDB('pending');
+		$approved = $this->countChangeByStatusFromDB('approved');
+		$inProgress = $this->countChangeByStatusFromDB('inProgress');
+		$closed   = $this->countChangeByStatusFromDB('closed');
+
+		return array('pending'=>$pending, 'approved'=>$approved, 'inProgress'=>$inProgress, 'closed'=>$closed);
 	}
 
 	public function beginTransaction() {
