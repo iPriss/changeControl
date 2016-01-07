@@ -87,7 +87,7 @@
 				<ul class="nav navbar-nav mainbar-nav">
 					<li class="active"><a href="index.php"><i class="fa fa-dashboard"></i>Dashboard</a></li>
 					<li class=""><a href="new_request.php"><i class="fa fa-plus"></i>Request Change</a></li>
-					<li class=""><a href="incoming_change.php"><i class="fa fa-info"></i>Incoming Change</a></li>
+                    <li class=""><a href="request-information.php"><i class="fa fa-info"></i>Request Information</a></li>
 					<li class=""><a href="task_calendar.php"><i class="fa fa-calendar"></i>Task Calendar</a></li>
 				</ul>
 			</div>
@@ -119,7 +119,7 @@
           				<div class="row-stat pending-to-approvals">
             				<p class="row-stat-label">Pending to aprovals</p>
             				<h3 class="row-stat-value">0</h3>
-            				<span class="label label-success row-stat-badge">+9%</span>
+            				<!-- <span class="label label-success row-stat-badge">+9%</span> -->
           				</div> <!-- /.row-stat -->
         			</div> <!-- /.col -->
 
@@ -128,7 +128,7 @@
           				<div class="row-stat approved">
             				<p class="row-stat-label">Approved</p>
             				<h3 class="row-stat-value">0</h3>
-            				<span class="label label-success row-stat-badge">+43%</span>
+            				<!-- <span class="label label-success row-stat-badge">+43%</span> -->
           				</div> <!-- /.row-stat -->
         			</div> <!-- /.col -->
 
@@ -137,7 +137,7 @@
           				<div class="row-stat changes-in-process">
             				<p class="row-stat-label">Changes in process</p>
             				<h3 class="row-stat-value">0</h3>
-            				<span class="label label-success row-stat-badge">+43%</span>
+            				<!-- <span class="label label-success row-stat-badge">+43%</span> -->
           				</div> <!-- /.row-stat -->
         			</div> <!-- /.col -->
 
@@ -146,7 +146,7 @@
           				<div class="row-stat closed-request">
             				<p class="row-stat-label">Closed requests</p>
             				<h3 class="row-stat-value">0</h3>
-            				<span class="label label-success row-stat-badge">+43%</span>
+            				<!-- <span class="label label-success row-stat-badge">+43%</span> -->
           				</div> <!-- /.row-stat -->
         			</div> <!-- /.col -->
 				</div>
@@ -332,12 +332,10 @@
 
 		setInterval( function () {
 		    oTable.ajax.reload();
-		}, 3000 );
+		}, 9000 );
 
         // Getting stats from db
         getStats();
-        timerStats = setInterval(function(){ getStats(); }, 1000);
-
-
+        timerStats = setInterval(function(){ getStats(); }, 3000);
 	});
 </script>
