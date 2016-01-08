@@ -147,6 +147,17 @@ class InitCoca extends Coca {
 		if(!$data){ die(returnError(118, 'An error ocurred, please try again later')); }
 		echo json_encode( array('status'=>'ok', 'data'=>$data));
 	}
+
+	// init.php?service=commentRequest&params[changeId]=32&params[userId]=omar.yerden&params[approver]=true&params[comment]=
+	public function commentRequest($params) {
+		if(!isset($params['changeId'])){ die(returnError(105, 'Missing or invalid change id')); }
+		if(!isset($params['userId'])){ die(returnError(105, 'Missing or invalid user id')); }
+		if(!isset($params['comment'])){ die(returnError(105, 'Missing or invalid comment')); }
+
+		$comment_id = $this->commentChangeRequest($params['changeId'], $params['userId'], $params['comment']);
+
+		echo json_encode( array('status'=>'ok', 'id'=>$comment_id) );
+	}
 }
 
 $service = isset($_REQUEST['service']) ? $_REQUEST['service'] : false;

@@ -176,6 +176,7 @@
 					                	<label for="users">Executed by (can be more than one)</label>
 						                <select data-required="true" multiple="multiple" id="users" name="users" class="formData form-control" tabindex="2">
 						                	<option>omar.yerden</option>
+						                	<option>omaryer</option>
 						                	<option>ignacio.mondino</option>
 						                </select>
 					                </div>

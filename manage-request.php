@@ -1,11 +1,59 @@
 <?php
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
     $username = 'omar.yerden';
 
     $profileAvatar = 'default_avatar-xs.jpg';
     $profileLabel = 'Omar Yerden';
 
+    $approve_id = '';
+    $change_id = '0';
+
     if(isset($_REQUEST['h']) && $_REQUEST['h'] != ''){
+        require_once('classes/Coca.php');
+        require_once('classes/Mailer.php');
+
+        $coca = new Coca();
+        $mail = new CocaMailer();
+
+        $validToken = $coca->validateToken($_REQUEST['h']);
+
+        if($validToken == false){ die('Unespected error'); }
+
+        $validToken = json_decode($validToken, true);
+
+        // Pendiente meter un error mas lindo
+        // if($validToken['status'] == 'error'){ die(json_encode($validToken)); }
+
+        $change_id = $coca->getChangeByToken($_REQUEST['h']);
+
+        // Pendiente meter un error mas lindo
+        // if($change_id == false){ die('Missing Change ID'); }
+
+        // Verify if is accept or reject token
+        $tokenType = isset($validToken['tokenType']) ? $validToken['tokenType'] : false;
+
+        // if($tokenType == 'accept'){
+        //     $coca->approveChange($_REQUEST['h']);
+        //     echo "Change Approved <br>";
+        // }else if($tokenType == 'reject'){
+        //     $coca->rejectChange($_REQUEST['h']);
+        //     echo "Change Rejected <br>";
+        // }
+
+        $change_status = ($tokenType == 'accept') ? 'Approved' : 'Rejected';
+
+        $approve_id = $validToken['approver'];
+        $executors = $coca->getRequestUsers($change_id, false);
+
+        if($executors == 'false' || !is_array($executors)){ die('Missing executors users'); }
+
+        foreach($executors as $executor){
+            $user_data = $coca->getUserData($executor);
+            $mail->sendMailStatusToExecutors( array('change_id'=>$change_id, 'user_email'=>$user_data['user_email'], 'change_status'=>$change_status, 'approver'=>$approve_id) );
+        }
 
     }
 
@@ -112,27 +160,29 @@
                     </ol>
                 </div> <!-- /.content-header -->
 
-                <h5 class="heading">Change Request # <?php echo isset($changeRequest) ? $changeRequest : '12345'; ?></h5>
+                <h5 class="heading">Change Request # <?php echo isset($change_id) ? $change_id : '12345'; ?></h5>
 
                 <ul class="icons-list notifications-list">
+                    <?php if($validToken['tokenType'] == 'reject'){ ?>
                     <li>
                         <i class="icon-li fa fa-ban text-danger"></i>
-                        <a href="javascript:;">You </a> rejected an <a href="request-information.php?requestId=<?php echo isset($requestId) ? $requestId : '123'; ?>">Change Request</a> from <?php echo isset($requestBy) ? $requestBy : 'Omar Yerden'; ?>
+                        <a href="javascript:;">You </a> rejected an <a href="request-information.php?requestId=<?php echo isset($change_id) ? $change_id : '123'; ?>">Change Request</a> from <?php echo isset($requestBy) ? $requestBy : 'Omar Yerden'; ?>
                     </li>
-
-                    <!-- <li>
+                    <?php }else if($validToken['tokenType'] == 'accept'){ ?>
+                    <li>
                         <i class="icon-li fa fa-check-circle text-success"></i>
-                        <a href="#">You</a> accepted an <a href="request-information.php?requestId=<?php echo isset($requestId) ? $requestId : '123'; ?>">Change Request</a> from <?php echo isset($requestBy) ? $requestBy : 'Omar Yerden'; ?>
-                    </li> -->
+                        <a href="#">You</a> accepted an <a href="request-information.php?requestId=<?php echo isset($change_id) ? $change_id : '123'; ?>">Change Request</a> from <?php echo isset($requestBy) ? $requestBy : 'Omar Yerden'; ?>
+                    </li>
+                    <?php } ?>
                 </ul>
 
                 <br />
 
                 <h5 class="heading">Leave a comment</h5>
 
-                <form id="validate-enhanced">
+                <form id="change_comment">
                     <div class="form-group">
-                        <textarea name="textarea-input" id="textarea-input" cols="10" rows="10" class="form-control" placeholder="Type a comment for this acction"></textarea>
+                        <textarea name="comment-input" id="comment-input" cols="10" rows="10" class="form-control" placeholder="Type a comment for this acction"></textarea>
                     </div>
 
                     <div class="form-group">
@@ -174,5 +224,28 @@
 
 <script>
     $(document).ready(function(){
+        $('#change_comment').on('submit', function(e){
+            e.preventDefault();
+            alert("GG");
+            // init.php?service=commentRequest&params[changeId]=32&params[userId]=omar.yerden&params&params[comment]=
+            // Getting data
+            data = {};
+            data['service'] = 'commentRequest';
+            data['params'] = {};
+            data['params']['userId']   = '<?php echo $approve_id; ?>';
+            data['params']['comment']  = $('textarea[name="comment-input"]').val();
+            data['params']['changeId'] = '<?php echo $change_id; ?>';
+
+            $.ajax({
+                'url': 'init.php',
+                'data': data,
+                'method': 'POST',
+                'dataType': 'json'
+            }).done(function(data){
+                if(data['status'] == 'ok'){
+                    $.howl({ type: 'success', title: 'Comment ID #' + data['comment_id'], content: 'Comment submited succefuly', lifetime: 7500 });
+                }
+            });
+        });
     });
 </script>

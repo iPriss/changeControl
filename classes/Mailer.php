@@ -66,6 +66,21 @@ class CocaMailer extends PHPMailer {
 
 		return PHPMailer::send();
 	}
+
+	public function sendMailStatusToExecutors($params) {
+		// $email, $acceptToken, $rejectToken,
+		// Creating body
+		$this->addAddress($params['user_email']);
+		$this->Subject = '[ChangeRequest #' . $params['change_id'] . '] ' . $params['change_status'];
+
+		if($params['change_status'] == 'Approved'){
+			$this->Body = 'The change request ' . $params['change_id'] . ' has been approved by ' . $params['approver'];
+		}else{
+			$this->Body = 'The change request ' . $params['change_id'] . ' has been rejected by ' . $params['approver'];
+		}
+
+		return PHPMailer::send();
+	}
 }
 
 ?>

@@ -30,14 +30,14 @@ class DBaccess {
 	}
 
 	public function createRequestOnDB($createdBy, $requestBy, $requestTitle, $requestDescription) {
-		$date_created = date('Y-m-d H:i:s');
-		$this -> query = "INSERT INTO changes (change_title, change_description, created_by, request_by, change_status, date_created)
+		$date = date('Y-m-d H:i:s');
+		$this -> query = "INSERT INTO changes (change_title, change_description, created_by, request_by, change_status, date_created, date_lastupdate)
 						  VALUES ('{$requestTitle}',
 						  		  '{$requestDescription}',
 						  		  '{$createdBy}',
 						  		  '{$requestBy}',
 						  		  'pending',
-						  		  '{$date_created}') RETURNING change_id";
+						  		  '{$date}', '{$date}') RETURNING change_id";
 		$this -> result = pg_query($this->dbCoca, $this -> query);
 		$changeId = pg_fetch_row($this -> result);
 		return $changeId[0];
@@ -108,7 +108,7 @@ class DBaccess {
 	public function getChangeByTokenFromDB($token) {
 		$this -> query = "SELECT change_id FROM changes_users WHERE (accept_token = '{$token}' OR reject_token = '{$token}')";
 		$this -> result = pg_query($this->dbCoca, $this -> query);
-		return pg_fetch_result($this -> result, 0, 0);
+		if(pg_num_rows($this -> result) > 0){ return pg_fetch_result($this -> result, 0, 0); }else{return false; }
 	}
 
 	public function getTokenDataFromDB($token){
@@ -152,6 +152,15 @@ class DBaccess {
 		$this -> result = pg_query($this -> dbCoca, $this -> query);
 
 		return pg_fetch_result($this -> result, 0, 0);
+	}
+
+	public function commentChangeRequestOnDB($changeId, $userId, $approver, $comment) {
+		$date = date('Y-m-d H:i:s');
+		$this -> query = "INSERT INTO changes_comments (change_id, user_id, is_approver, comment)
+						  VALUES ('{$changeId}','{$userId}','{$approver}','{$comment}') RETURNING comment_id";
+		$this -> result = pg_query($this -> dbCoca, $this -> query);
+		$commentId = pg_fetch_row($this -> result);
+		return $commentId[0];
 	}
 
 	function __destruct(){

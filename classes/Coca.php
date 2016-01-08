@@ -79,7 +79,7 @@ class Coca extends DBAccess {
 		$orderBy = isset($orderBy) ? $orderBy : false;
 
 		if($orderBy && $orderBy == 'last'){
-			$orderBy = 'ORDER BY date_created DESC';
+			$orderBy = 'ORDER BY date_lastupdate DESC NULLS LAST';
 		}
 
 		return $this->getChangeByUserFromDB($this->user_id, $limit, $orderBy);
@@ -177,7 +177,7 @@ class Coca extends DBAccess {
 
 		if($token_data['token_used'] == $tokenType){ return returnError(54, 'Token already used'); }
 
-		return true;
+		return json_encode(array('status'=>'ok', 'tokenType'=>$tokenType, 'approver'=>$token_data['user_id']));
 	}
 
 	public function countChangeByStatus() {
@@ -185,8 +185,25 @@ class Coca extends DBAccess {
 		$approved = $this->countChangeByStatusFromDB('approved');
 		$inProgress = $this->countChangeByStatusFromDB('inProgress');
 		$closed   = $this->countChangeByStatusFromDB('closed');
+		$closed  += $this->countChangeByStatusFromDB('rejected');
 
 		return array('pending'=>$pending, 'approved'=>$approved, 'inProgress'=>$inProgress, 'closed'=>$closed);
+	}
+
+	public function commentChangeRequest($changeId, $userId, $comment) {
+		$this -> user_id = validateParam($userId, True, 'Invalid or Missing change id');
+		$this -> change_id = validateParam($changeId, True, 'Invalid or Missing change id');
+
+		$approver = 'f';
+
+		$change_data = $this->getChangeFromDB($this->change_id);
+		if(!$change_data){ return returnError(70, 'Invalid change id'); }
+
+		$user_data = $this->getUserDataFromDB($userId);
+		if(!$user_data){ return returnError(70, 'Invalid user id'); }
+
+		if($user_data['is_approver']){ $approver = 't'; }
+		return $this->commentChangeRequestOnDB($this->change_id, $this->user_id, $approver, $comment);
 	}
 
 	public function beginTransaction() {
